@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Falling Text</title>
+
+  <style>
+    @font-face {
+      font-family: Dogica;
+      src: url(./dogicapixelbold.otf);
+      -webkit-font-smoothing: none;
+      -moz-osx-font-smoothing: unset;
+      font-smoothing: unset; 
+    }
+
+    * {
+      -webkit-user-select: none; /* Safari */
+      -ms-user-select: none; /* IE 10 and IE 11 */
+      user-select: none; /* Standard syntax */
+      padding: 0px;
+      margin: 0px;
+      box-sizing: border-box;
+    }
+
+    html {
+      font-size: max(8px, .5vw);
+      font-family: Dogica, monospace;
+    }
+
+    #tela {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      background-color: #140d00;
+      overflow: hidden;
+    }
+
+    #tela span {
+      position: absolute;
+      /* color: #fcdc00; */
+      font-size: 1rem;
+      font-family: Dogica, monospace;
+    }
+
+    #controles {
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+      position: absolute;
+      right: 1rem;
+      top: 1rem;
+    }
+
+    #controles > button {
+      width: 2rem;
+      border: none;
+      background-color: #0007;
+      color: #fcfcfc;
+      cursor: pointer;
+    }
+
+    #controles.aberto > #conteudo {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      width: 40rem;
+      background-color: #0007;
+      color: #fcfcfc;
+      padding: 1rem;
+    }
+
+    #controles.fechado > #conteudo {
+      display: none;
+    }
+
+    
+    #conteudo .input-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      justify-content: space-between;
+    }
+    
+    #conteudo .input-wrapper span {
+      font-size: 1rem;
+    }
+    
+    #conteudo .input-wrapper input {
+      font-size: 1rem;
+      width: 15rem;
+      background-color: #fff3;
+      border: none;
+      outline: none;
+      color: #fcfcfc;
+      font-family: Dogica, monospace;
+      padding: .2rem .5rem;
+    }
+
+    </style>
+</head>
+
+<body>
+  <div id="tela"></div>
+  <div id="controles" class="aberto">
+    <div id="conteudo">
+      <h1>Configurações</h1>
+      <div id="linhas" class="input-wrapper">
+        <span>linhas: </span>
+        <input type="text">
+        </input>
+      </div>
+      <div id="caracteres" class="input-wrapper">
+        <span>caracteres: </span>
+        <input type="text">
+        </input>
+      </div>
+      <div id="str" class="input-wrapper">
+        <span>str: </span>
+        <input type="text">
+        </input>
+      </div>
+      <div id="step" class="input-wrapper">
+        <span>step: </span>
+        <input type="text">
+        </input>
+      </div>
+      <div id="espacamento" class="input-wrapper">
+        <span>espacamento: </span>
+        <input type="text">
+        </input>
+      </div>
+      <div id="parallax" class="input-wrapper">
+        <span>parallax: </span>
+        <input type="text">
+        </input>
+      </div>
+      <div id="randomicidadeX" class="input-wrapper">
+        <span>randomicidadeX: </span>
+        <input type="text">
+        </input>
+      </div>
+      <div id="randomicidadeY" class="input-wrapper">
+        <span>randomicidadeY: </span>
+        <input type="text">
+        </input>
+      </div>
+      <div id="randomicidadeCadeia" class="input-wrapper">
+        <span>randomicidadeCadeia: </span>
+        <input type="text">
+        </input>
+      </div>
+      <!-- <div id="gradienteA" class="input-wrapper">
+        <span>gradienteA: </span>
+        <input type="color">
+        </input>
+      </div>
+      <div id="gradienteAAlpha" class="input-wrapper">
+        <span>gradienteAAlpha: </span>
+        <input type="range" min="0" max="1" step="0.05">
+        </input>
+      </div>
+      <div id="gradienteB" class="input-wrapper">
+        <span>gradienteB: </span>
+        <input type="color">
+        </input>
+      </div>
+      <div id="gradienteBAlpha" class="input-wrapper">
+        <span>gradienteBAlpha: </span>
+        <input type="range" min="0" max="1" step="0.05">
+        </input>
+      </div> -->
+      <button onclick="reloadConfig()">
+        Reset
+      </button>
+    </div>
+    <button onclick="abrirConfig()">[+]</button>
+  </div>
+
+  <!-- Falling Text -->
+  <script>
+    //@ts-check
+    let telaHTML = document.getElementById("tela");
+    if (!telaHTML) throw new Error();
+
+    //-variaveis----------------------------------------------------------------
+
+    let linhas = 150;
+    let caracteres = 20;
+    let str = "abcdefghijklmnopqrstuvwxyz01234567890!@#$%&*()+-=~<>;:/?\\|       ";
+    let step = 100;
+    let espacamento = 12;
+    let parallax = 3;
+    let randomicidadeX = 0; // 2
+    let randomicidadeY = 100; // 100
+    let randomicidadeCadeia = 0;
+
+    const gradiente = ["#02A1F9FF", "#29F19C00"];
+
+    /** @type {{c: string, x: number, y: number, elem: HTMLElement}[][]} */
+    const pool = [];
+    // const poolTam = [];
+
+    //-funcoes auxiliares-------------------------------------------------------
+
+    const randomInRange = (tam) => (Math.floor(Math.random()*1000))%tam;
+    /** @type {(n: number) => string}*/
+    const numToHex = (num) => num < 0x10 ? `0${num.toString(16)}` : num.toString(16);
+    const calculateGradient = (percent) => {
+      const grad = gradiente
+        .map((val) => parseInt(val.slice(1), 16))
+        .map((val) => {
+          return {
+            r: (val >> 24) & 0xFF,
+            g: (val >> 16) & 0xFF,
+            b: (val >> 8) & 0xFF,
+            a: (val) & 0xFF,
+          }
+        });
+
+      const color = {
+        a: (grad[0].a * (percent) + grad[1].a * (1 - percent)) | 0,
+        r: (grad[0].r * (percent) + grad[1].r * (1 - percent)) | 0,
+        g: (grad[0].g * (percent) + grad[1].g * (1 - percent)) | 0,
+        b: (grad[0].b * (percent) + grad[1].b * (1 - percent)) | 0,
+      }
+
+      return `${
+        numToHex(color.r)
+      }${
+        numToHex(color.g)
+      }${
+        numToHex(color.b)
+      }${
+        numToHex(color.a)
+      }`
+
+      // return(gradiente[0] * (1 - percent)) + (gradiente[1] * percent)
+    };
+
+    //-eventos------------------------------------------------------------------
+
+    window.onresize = () => {
+      for (let i = 0; i < pool.length; i++) {
+        let randomX = (Math.random() * randomicidadeX | 0);
+        randomX = randomX * 2 - randomicidadeX;
+
+        for (let j = 0; j < pool[i].length; j++) {
+          pool[i][j].x = (i + randomX) * (window.innerWidth)/linhas;
+        }
+      }
+    }
+
+    //-manipulação da "pool"----------------------------------------------------
+
+    function resetPool() {
+      telaHTML.innerHTML = '';
+
+      for (let i = 0; i < pool.length; i++) {
+        for (let j = 0; j < pool[i].length; j++) {
+          pool[i][j] = undefined;
+        }
+      }
+
+      pool.length = 0;
+    }
+
+    function fillPool() {
+      for (let i = 0; i < linhas; i++) {
+        pool[i] = [];
+
+        let randomX = (Math.random() * randomicidadeX | 0);
+        randomX = randomX * 2 - randomicidadeX;
+        const randomY = (Math.random() * randomicidadeY | 0);
+
+        let randomChar = (Math.random() * randomicidadeCadeia | 0);
+        randomChar = randomChar * 2 - randomicidadeCadeia;
+        const poolTam = Math.abs(caracteres - randomChar);
+        
+        for (let j = 0; j < poolTam; j++) {
+          //@ts-ignore
+          pool[i][j] = {
+            c: str[randomInRange(str.length)],
+            x: (i + randomX) * (window.innerWidth)/linhas,
+            y: (j + randomY) * espacamento,
+            elem: document.createElement("span"),
+          }
+
+          // console.log(pool[i][j]);
+
+          pool[i][j].elem.innerHTML = pool[i][j].c;
+          pool[i][j].elem.style.left = `${pool[i][j].x}px`;
+          pool[i][j].elem.style.top = `${pool[i][j].y}px`;
+          
+          if (j < poolTam - 1) {
+            pool[i][j].elem.style.color = `#${calculateGradient(1/(poolTam/(j + 1)))}`;
+          } else {            
+            pool[i][j].elem.style.color = `#fcfcfc`;
+          }
+        }
+      }
+    }
+
+    function setupPool() {
+      let cont = 0;
+      for (let i = 0; i < pool.length; i++) {
+        for (let j = 0; j < pool[i].length; j++) {
+          //@ts-ignore
+          telaHTML.appendChild(pool[i][j].elem)
+          cont++;
+        }
+      }
+    }
+
+    function updatePool(frame) {
+      let state = true; 
+
+      for (let i = 0; i < pool.length; i++) {
+        for (let j = 0; j < pool[i].length; j++) {
+          state = true;
+          for (let k = 1; k < parallax + 1; k++) {
+            if (frame % k && i % k) {
+              state = false;
+              break;
+            }
+          }
+
+          if (state) {
+            // console.log(pool[i][j]);
+            pool[i][j].y = (pool[i][j].y + espacamento) % window.innerHeight;
+            pool[i][j].elem.style.left = `${pool[i][j].x}px`;
+            pool[i][j].elem.style.top = `${pool[i][j].y}px`;
+          }
+        }
+      }
+    }
+
+    //-main---------------------------------------------------------------------
+
+    function reload() {
+      resetPool();
+      fillPool();
+      setupPool();
+    }
+
+    (() => {
+      reload();
+      let frame = 0;
+      let now = 0;
+      let dt = 0;
+      let then = 0;
+      requestAnimationFrame(function update() {
+        requestAnimationFrame(update);
+
+        now = Date.now();
+        dt = now - then;
+        
+        if (dt > step) {
+          then = now - (dt % step);
+          frame++;
+          
+          updatePool(frame);
+        }
+      });
+    })();
+  </script>
+
+  <!-- Controles -->
+  <script>
+    // TODO: Mudar para um hash
+
+    const controlesHTML = document.getElementById("controles");
+    const linhasHTML = document.querySelector(".input-wrapper#linhas input");
+    const caracteresHTML = document.querySelector(".input-wrapper#caracteres input");
+    const strHTML = document.querySelector(".input-wrapper#str input");
+    const stepHTML = document.querySelector(".input-wrapper#step input");
+    const espacamentoHTML = document.querySelector(".input-wrapper#espacamento input");
+    const parallaxHTML = document.querySelector(".input-wrapper#parallax input");
+    const randomicidadeXHTML = document.querySelector(".input-wrapper#randomicidadeX input");
+    const randomicidadeYHTML = document.querySelector(".input-wrapper#randomicidadeY input");
+    const randomicidadeCadeiaHTML = document.querySelector(".input-wrapper#randomicidadeCadeia input");
+
+    function abrirConfig() {
+      if (controlesHTML.classList.contains("fechado")) {
+        controlesHTML.classList.remove("fechado");
+        controlesHTML.classList.add("aberto");
+      } else {
+        controlesHTML.classList.remove("aberto");
+        controlesHTML.classList.add("fechado");
+      }
+    }
+
+    function reloadConfig() {
+      linhas = parseInt(linhasHTML.value);
+      caracteres = parseInt(caracteresHTML.value);
+      str = strHTML.value;
+      step = parseInt(stepHTML.value);
+      espacamento = parseInt(espacamentoHTML.value);
+      parallax = parseInt(parallaxHTML.value);
+      randomicidadeX = parseInt(randomicidadeXHTML.value);
+      randomicidadeY = parseInt(randomicidadeYHTML.value);
+      randomicidadeCadeia = parseInt(randomicidadeCadeiaHTML.value);
+
+      reload();
+    }
+
+    (() => {
+      linhasHTML.value = linhas;
+      caracteresHTML.value = caracteres;
+      strHTML.value = str;
+      stepHTML.value = step;
+      espacamentoHTML.value = espacamento;
+      parallaxHTML.value = parallax;
+      randomicidadeXHTML.value = randomicidadeX;
+      randomicidadeYHTML.value = randomicidadeY;
+      randomicidadeCadeiaHTML.value = randomicidadeCadeia;
+    })();
+  </script>
+</body>
+
+</html>
