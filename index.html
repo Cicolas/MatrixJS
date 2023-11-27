@@ -4,7 +4,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Falling Text</title>
+  <meta name="description" content="Matrix like character droping">
+  <link rel="icon" href="favicon.gif" type="image/gif" >
+  <title>MatrixJS</title>
 
   <style>
     @font-face {
@@ -192,15 +194,19 @@
     let str = "abcdefghijklmnopqrstuvwxyz01234567890!@#$%&*()+-=~<>;:/?\\|       ";
     let step = 100;
     let espacamento = 12;
-    let parallax = 3;
+    let parallax = 0;
     let randomicidadeX = 0; // 2
-    let randomicidadeY = 100; // 100
+    let randomicidadeY = 0; // 100
     let randomicidadeCadeia = 0;
 
-    const gradiente = ["#02A1F9FF", "#29F19C00"];
+    const gradiente = ["#29F19CFF", "#29F19C00"];
 
     /** @type {{c: string, x: number, y: number, elem: HTMLElement}[][]} */
     const pool = [];
+    let frame = 0;
+    let now = 0;
+    let dt = 0;
+    let then = 0;
     // const poolTam = [];
 
     //-funcoes auxiliares-------------------------------------------------------
@@ -244,11 +250,13 @@
 
     window.onresize = () => {
       for (let i = 0; i < pool.length; i++) {
-        let randomX = (Math.random() * randomicidadeX | 0);
+        let randomX = (Math.random() * (randomicidadeX + 1) | 0);
         randomX = randomX * 2 - randomicidadeX;
+        const randomY = (Math.random() * (randomicidadeY + 1) | 0);
 
         for (let j = 0; j < pool[i].length; j++) {
           pool[i][j].x = (i + randomX) * (window.innerWidth)/linhas;
+          pool[i][j].y =  (j + randomY) * espacamento;
         }
       }
     }
@@ -271,12 +279,12 @@
       for (let i = 0; i < linhas; i++) {
         pool[i] = [];
 
-        let randomX = (Math.random() * randomicidadeX | 0);
-        randomX = randomX * 2 - randomicidadeX;
-        const randomY = (Math.random() * randomicidadeY | 0);
+        let randomX = (Math.random() * (randomicidadeX + 1) | 0);
+        randomX = randomX * 2 - (randomicidadeX + 1);
+        const randomY = (Math.random() * (randomicidadeY + 1) | 0);
 
-        let randomChar = (Math.random() * randomicidadeCadeia | 0);
-        randomChar = randomChar * 2 - randomicidadeCadeia;
+        let randomChar = (Math.random() * (randomicidadeCadeia + 1) | 0);
+        randomChar = randomChar * 2 - (randomicidadeCadeia + 1);
         const poolTam = Math.abs(caracteres - randomChar);
         
         for (let j = 0; j < poolTam; j++) {
@@ -340,6 +348,10 @@
     //-main---------------------------------------------------------------------
 
     function reload() {
+      frame = 0;
+      now = 0;
+      dt = 0;
+      then = 0;
       resetPool();
       fillPool();
       setupPool();
@@ -347,10 +359,6 @@
 
     (() => {
       reload();
-      let frame = 0;
-      let now = 0;
-      let dt = 0;
-      let then = 0;
       requestAnimationFrame(function update() {
         requestAnimationFrame(update);
 
