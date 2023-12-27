@@ -105,7 +105,7 @@
 </head>
 
 <body>
-  <div id="tela"></div>
+  <canvas id="tela"></canvas>
   <div id="controles" class="aberto">
     <div id="conteudo">
       <h1>Configurações</h1>
@@ -184,8 +184,22 @@
   <!-- Falling Text -->
   <script>
     //@ts-check
+    const HTMLRenderer = false;
+
     let telaHTML = document.getElementById("tela");
     if (!telaHTML) throw new Error();
+    
+    if (!HTMLRenderer) {
+      telaHTML.width = window.innerWidth;
+      telaHTML.height = window.innerHeight;
+    }
+
+    /** 
+     * @type {CanvasRenderingContext2D}
+    */
+    let context;
+    if (!HTMLRenderer)
+      context = telaHTML.getContext("2d");
 
     //-variaveis----------------------------------------------------------------
 
@@ -201,7 +215,7 @@
 
     const gradiente = ["#29F19CFF", "#29F19C00"];
 
-    /** @type {{c: string, x: number, y: number, elem: HTMLElement}[][]} */
+    /** @type {{c: string, x: number, y: number, color: string, elem: HTMLElement}[][]} */
     const pool = [];
     let frame = 0;
     let now = 0;
@@ -249,6 +263,10 @@
     //-eventos------------------------------------------------------------------
 
     window.onresize = () => {
+      if (!HTMLRenderer) {
+        telaHTML.width = window.innerWidth;
+        telaHTML.height = window.innerHeight;
+      }
       for (let i = 0; i < pool.length; i++) {
         let randomX = (Math.random() * (randomicidadeX + 1) | 0);
         randomX = randomX * 2 - randomicidadeX;
@@ -264,7 +282,7 @@
     //-manipulação da "pool"----------------------------------------------------
 
     function resetPool() {
-      telaHTML.innerHTML = '';
+      if (HTMLRenderer) telaHTML.innerHTML = '';
 
       for (let i = 0; i < pool.length; i++) {
         for (let j = 0; j < pool[i].length; j++) {
@@ -293,31 +311,37 @@
             c: str[randomInRange(str.length)],
             x: (i + randomX) * (window.innerWidth)/linhas,
             y: (j + randomY) * espacamento,
-            elem: document.createElement("span"),
           }
 
+          if (j < poolTam - 1) {
+            pool[i][j].color = `#${calculateGradient(1/(poolTam/(j + 1)))}`;
+          } else {            
+            pool[i][j].color = `#fcfcfc`;
+          }
+          
+          if (HTMLRenderer) {
+            pool[i][j].elem = document.createElement("span");
+            pool[i][j].elem.innerHTML = pool[i][j].c;
+            pool[i][j].elem.style.left = `${pool[i][j].x}px`;
+            pool[i][j].elem.style.top = `${pool[i][j].y}px`; 
+            pool[i][j].elem.style.color = pool[i][j].color;
+          }
+            
           // console.log(pool[i][j]);
 
-          pool[i][j].elem.innerHTML = pool[i][j].c;
-          pool[i][j].elem.style.left = `${pool[i][j].x}px`;
-          pool[i][j].elem.style.top = `${pool[i][j].y}px`;
-          
-          if (j < poolTam - 1) {
-            pool[i][j].elem.style.color = `#${calculateGradient(1/(poolTam/(j + 1)))}`;
-          } else {            
-            pool[i][j].elem.style.color = `#fcfcfc`;
-          }
         }
       }
     }
 
     function setupPool() {
-      let cont = 0;
-      for (let i = 0; i < pool.length; i++) {
-        for (let j = 0; j < pool[i].length; j++) {
-          //@ts-ignore
-          telaHTML.appendChild(pool[i][j].elem)
-          cont++;
+      if (HTMLRenderer) {
+        let cont = 0;
+        for (let i = 0; i < pool.length; i++) {
+          for (let j = 0; j < pool[i].length; j++) {
+            //@ts-ignore
+            telaHTML.appendChild(pool[i][j].elem)
+            cont++;
+          }
         }
       }
     }
@@ -325,6 +349,8 @@
     function updatePool(frame) {
       let state = true; 
 
+      if (!HTMLRenderer) context.clearRect(0, 0, window.innerWidth, window.innerHeight);
+      
       for (let i = 0; i < pool.length; i++) {
         for (let j = 0; j < pool[i].length; j++) {
           state = true;
@@ -338,8 +364,14 @@
           if (state) {
             // console.log(pool[i][j]);
             pool[i][j].y = (pool[i][j].y + espacamento) % window.innerHeight;
-            pool[i][j].elem.style.left = `${pool[i][j].x}px`;
-            pool[i][j].elem.style.top = `${pool[i][j].y}px`;
+
+            if (HTMLRenderer) {
+              pool[i][j].elem.style.left = `${pool[i][j].x}px`;
+              pool[i][j].elem.style.top = `${pool[i][j].y}px`;
+            } else {
+              context.fillStyle = pool[i][j].color;
+              context.fillText(pool[i][j].c, pool[i][j].x, pool[i][j].y);
+            }
           }
         }
       }
@@ -359,6 +391,8 @@
 
     (() => {
       reload();
+      if (!HTMLRenderer) context.font = "1rem Dogica";
+
       requestAnimationFrame(function update() {
         requestAnimationFrame(update);
 
