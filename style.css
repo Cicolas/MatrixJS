@@ -1,0 +1,138 @@
+#tela {
+  position: absolute;
+  left: 0px;
+  right: 0px;
+  top: 0px;
+  bottom: 0px;
+  background-color: #140d00;
+  overflow: hidden;
+  z-index: -99;
+}
+
+#hero {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  align-items: center;
+  justify-content: center;
+}
+
+.hero-container {
+  position: relative;
+  width: 50vw;
+  height: 50vh;
+  background-color: #000;
+  margin: auto;
+  padding: 1rem;
+  color: #fcfcfc;
+}
+
+.hero-container #titulo {
+  width: 100%;
+  height: 100%;
+  border-style: double;
+  border-color: #fcfcfc;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 6rem 8rem;
+}
+
+.hero-container #titulo h1 {
+  font-size: 7rem;
+  line-height: 150%;
+}
+
+.hero-container #close-btn {
+  position: absolute;
+  right: 3rem;
+  top: 3rem;
+  font-size: 1.5rem;
+  color: #e01919;
+  cursor: pointer;
+}
+
+.hero-container #titulo .message {
+  width: 100%;
+  text-align: center;
+  color: #fcfcfc4f;
+  font-size: 1.5rem;
+}
+
+.hero-container #titulo .bottom {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.hero-container #titulo .bottom span {
+  font-size: 2rem;
+  line-height: 125%;
+}
+
+.hero-container #titulo .bottom :nth-child(1) {
+  color: #29F19C;
+}
+
+.hero-container #titulo .bottom :nth-child(2) {
+  color: #02A1F9;
+  font-size: 4rem;
+  /* const gradiente = ["#02A1F9FF", "#29F19C00"]; */
+
+}
+
+#controles {
+  position: absolute;
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  position: absolute;
+  right: 1rem;
+  top: 1rem;
+}
+
+#controles>button {
+  width: 2rem;
+  border: none;
+  background-color: #0007;
+  color: #fcfcfc;
+  cursor: pointer;
+}
+
+#controles.aberto>#conteudo {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 40rem;
+  background-color: #0007;
+  color: #fcfcfc;
+  padding: 1rem;
+}
+
+#controles.fechado>#conteudo {
+  display: none;
+}
+
+#conteudo .input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+#conteudo .input-wrapper span {
+  font-size: 1rem;
+}
+
+#conteudo .input-wrapper input {
+  font-size: 1rem;
+  width: 15rem;
+  background-color: #fff3;
+  border: none;
+  outline: none;
+  color: #fcfcfc;
+  font-family: Dogica, monospace;
+  padding: 0.2rem 0.5rem;
+}

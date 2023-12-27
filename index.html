@@ -27,85 +27,41 @@
     }
 
     html {
-      font-size: max(8px, .5vw);
+      font-size: 8px;
+      /* font-size: max(8px, .5vw); */
       font-family: Dogica, monospace;
     }
-
-    #tela {
-      position: relative;
-      width: 100vw;
-      height: 100vh;
-      background-color: #140d00;
-      overflow: hidden;
-    }
-
-    #tela span {
-      position: absolute;
-      /* color: #fcdc00; */
-      font-size: 1rem;
-      font-family: Dogica, monospace;
-    }
-
-    #controles {
-      display: flex;
-      gap: 1rem;
-      align-items: flex-start;
-      position: absolute;
-      right: 1rem;
-      top: 1rem;
-    }
-
-    #controles > button {
-      width: 2rem;
-      border: none;
-      background-color: #0007;
-      color: #fcfcfc;
-      cursor: pointer;
-    }
-
-    #controles.aberto > #conteudo {
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-      width: 40rem;
-      background-color: #0007;
-      color: #fcfcfc;
-      padding: 1rem;
-    }
-
-    #controles.fechado > #conteudo {
-      display: none;
-    }
-
-    
-    #conteudo .input-wrapper {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      justify-content: space-between;
-    }
-    
-    #conteudo .input-wrapper span {
-      font-size: 1rem;
-    }
-    
-    #conteudo .input-wrapper input {
-      font-size: 1rem;
-      width: 15rem;
-      background-color: #fff3;
-      border: none;
-      outline: none;
-      color: #fcfcfc;
-      font-family: Dogica, monospace;
-      padding: .2rem .5rem;
-    }
-
     </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-  <canvas id="tela"></canvas>
+  <div id="hero">
+    <div class="hero-container">
+      <span id="close-btn">[x]</span>
+      <div id="titulo">
+        <h1>
+          Recepção de
+          <br/>
+          Calouros
+        </h1>
+        <div class="message">
+          Pressione [Enter] para ver os horários
+        </div>
+        <div class="bottom">
+          <span>
+            ciencia da computação 
+            <br/>
+            informática
+          </span>
+          <span>
+            2024
+          </span>
+        </div>
+      </div>
+    </div>
+    <canvas id="tela"></canvas>
+  </div>
   <div id="controles" class="aberto">
     <div id="conteudo">
       <h1>Configurações</h1>
@@ -213,9 +169,9 @@
     let str = "abcdefghijklmnopqrstuvwxyz01234567890!@#$%&*()+-=~<>;:/?\\|       ";
     let step = 100;
     let espacamento = 12;
-    let parallax = 0;
+    let parallax = 2;
     let randomicidadeX = 0; // 2
-    let randomicidadeY = 0; // 100
+    let randomicidadeY = 100; // 100
     let randomicidadeCadeia = 0;
     let ciclarCaracter = false;
 
@@ -272,6 +228,7 @@
       if (!HTMLRenderer) {
         telaHTML.width = window.innerWidth;
         telaHTML.height = window.innerHeight;
+        context.font = "1rem Dogica";
       }
       for (let i = 0; i < pool.length; i++) {
         let randomX = (Math.random() * (randomicidadeX + 1) | 0);
