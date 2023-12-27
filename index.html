@@ -154,6 +154,11 @@
         <input type="text">
         </input>
       </div>
+      <div id="ciclarCaracter" class="input-wrapper">
+        <span>ciclarCaracter: </span>
+        <input type="checkbox">
+        </input>
+      </div>
       <!-- <div id="gradienteA" class="input-wrapper">
         <span>gradienteA: </span>
         <input type="color">
@@ -202,7 +207,7 @@
       context = telaHTML.getContext("2d");
 
     //-variaveis----------------------------------------------------------------
-
+  
     let linhas = 150;
     let caracteres = 20;
     let str = "abcdefghijklmnopqrstuvwxyz01234567890!@#$%&*()+-=~<>;:/?\\|       ";
@@ -212,10 +217,11 @@
     let randomicidadeX = 0; // 2
     let randomicidadeY = 0; // 100
     let randomicidadeCadeia = 0;
+    let ciclarCaracter = false;
 
     const gradiente = ["#29F19CFF", "#29F19C00"];
 
-    /** @type {{c: string, x: number, y: number, color: string, elem: HTMLElement}[][]} */
+    /** @type {{c: number, x: number, y: number, color: string, elem: HTMLElement}[][]} */
     const pool = [];
     let frame = 0;
     let now = 0;
@@ -308,7 +314,7 @@
         for (let j = 0; j < poolTam; j++) {
           //@ts-ignore
           pool[i][j] = {
-            c: str[randomInRange(str.length)],
+            c: randomInRange(str.length),
             x: (i + randomX) * (window.innerWidth)/linhas,
             y: (j + randomY) * espacamento,
           }
@@ -321,7 +327,7 @@
           
           if (HTMLRenderer) {
             pool[i][j].elem = document.createElement("span");
-            pool[i][j].elem.innerHTML = pool[i][j].c;
+            pool[i][j].elem.innerHTML = str[pool[i][j].c];
             pool[i][j].elem.style.left = `${pool[i][j].x}px`;
             pool[i][j].elem.style.top = `${pool[i][j].y}px`; 
             pool[i][j].elem.style.color = pool[i][j].color;
@@ -363,21 +369,38 @@
 
           if (state) {
             // console.log(pool[i][j]);
-            pool[i][j].y = (pool[i][j].y + espacamento) % window.innerHeight;
+            if (ciclarCaracter) pool[i][j].c = (pool[i][j].c + 1) % str.length;
 
-            if (HTMLRenderer) {
-              pool[i][j].elem.style.left = `${pool[i][j].x}px`;
-              pool[i][j].elem.style.top = `${pool[i][j].y}px`;
-            } else {
-              context.fillStyle = pool[i][j].color;
-              context.fillText(pool[i][j].c, pool[i][j].x, pool[i][j].y);
-            }
+            let {x, y} = trasform(i, j);
+            pool[i][j].x = x;
+            pool[i][j].y = y;
+          }
+
+          if (HTMLRenderer) {
+            pool[i][j].elem.style.left = `${pool[i][j].x}px`;
+            pool[i][j].elem.style.top = `${pool[i][j].y}px`;
+          } else {
+            context.fillStyle = pool[i][j].color;
+            context.fillText(str[pool[i][j].c], pool[i][j].x, pool[i][j].y);
           }
         }
       }
     }
 
     //-main---------------------------------------------------------------------
+
+    /**
+     * funcao que dita o movimento
+     * dos caracteres
+     * */
+    function trasform(i, j) {
+      let x = pool[i][j].x, y = pool[i][j].y;
+      
+      // x = (pool[i][j].x + espacamento) % window.innerWidth;
+      y = (y + espacamento) % window.innerHeight;
+
+      return { x, y }
+    }
 
     function reload() {
       frame = 0;
@@ -423,6 +446,7 @@
     const randomicidadeXHTML = document.querySelector(".input-wrapper#randomicidadeX input");
     const randomicidadeYHTML = document.querySelector(".input-wrapper#randomicidadeY input");
     const randomicidadeCadeiaHTML = document.querySelector(".input-wrapper#randomicidadeCadeia input");
+    const ciclarCaracterHTML = document.querySelector(".input-wrapper#ciclarCaracter input");
 
     function abrirConfig() {
       if (controlesHTML.classList.contains("fechado")) {
@@ -444,6 +468,8 @@
       randomicidadeX = parseInt(randomicidadeXHTML.value);
       randomicidadeY = parseInt(randomicidadeYHTML.value);
       randomicidadeCadeia = parseInt(randomicidadeCadeiaHTML.value);
+      ciclarCaracter = ciclarCaracterHTML.checked;
+      console.log(ciclarCaracter, ciclarCaracterHTML);
 
       reload();
     }
@@ -458,6 +484,7 @@
       randomicidadeXHTML.value = randomicidadeX;
       randomicidadeYHTML.value = randomicidadeY;
       randomicidadeCadeiaHTML.value = randomicidadeCadeia;
+      ciclarCaracterHTML.checked = ciclarCaracter;
     })();
   </script>
 </body>
